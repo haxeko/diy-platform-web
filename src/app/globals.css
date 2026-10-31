@@ -1,0 +1,372 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens — iOS-inspired, light, soft.                         */
+/*  Semantic names follow UIKit: bg / surface / label / separator /    */
+/*  tint, plus pastel accents used for project & firmware cards.       */
+/* ------------------------------------------------------------------ */
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI Variable Text", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* backgrounds */
+  --color-bg: #f2f2f7;
+  --color-bg-2: #e9e9ee;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f7fa;
+
+  /* text */
+  --color-label: #1c1c1e;
+  --color-label-2: #636366;
+  --color-label-3: #8e8e93;
+  --color-label-4: #aeaeb2;
+  --color-on-tint: #ffffff;
+
+  /* lines & fills */
+  --color-separator: rgb(60 60 67 / 0.12);
+  --color-separator-strong: rgb(60 60 67 / 0.24);
+  --color-fill: rgb(120 120 128 / 0.12);
+  --color-fill-2: rgb(120 120 128 / 0.08);
+
+  /* brand tint (system blue, slightly softened) */
+  --color-tint: #0a7aff;
+  --color-tint-strong: #0066d6;
+  --color-tint-soft: #e6f0ff;
+  --color-tint-soft-2: #f2f7ff;
+
+  /* semantic */
+  --color-success: #2fb457;
+  --color-success-soft: #e3f7e9;
+  --color-warning: #e08a00;
+  --color-warning-soft: #fff3df;
+  --color-danger: #e5352b;
+  --color-danger-soft: #ffe8e6;
+
+  /* pastel accents (soft background + readable foreground) */
+  --color-sky: #0b5cad;
+  --color-sky-soft: #dcecff;
+  --color-mint: #0e6b4a;
+  --color-mint-soft: #dcf5ea;
+  --color-lavender: #5a3fbd;
+  --color-lavender-soft: #e9e4ff;
+  --color-peach: #b04e17;
+  --color-peach-soft: #ffe7d8;
+  --color-lemon: #7f5d00;
+  --color-lemon-soft: #fff3c7;
+  --color-rose: #b02852;
+  --color-rose-soft: #ffe1ea;
+  --color-graphite: #3a3a3c;
+  --color-graphite-soft: #e8e8ed;
+
+  /* shape */
+  --radius-card: 20px;
+  --radius-card-lg: 28px;
+  --radius-control: 12px;
+  --radius-pill: 9999px;
+
+  /* elevation */
+  --shadow-card: 0 1px 1px rgb(0 0 0 / 0.03), 0 10px 30px -14px rgb(17 24 39 / 0.14);
+  --shadow-card-hover: 0 1px 1px rgb(0 0 0 / 0.03), 0 18px 40px -16px rgb(17 24 39 / 0.2);
+  --shadow-glass: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 8px 24px -16px rgb(0 0 0 / 0.18);
+
+  /* motion */
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-label);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "kern";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-tint-soft);
+  color: var(--color-tint-strong);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-tint) 45%, transparent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Utilities                                                          */
+/* ------------------------------------------------------------------ */
+@utility glass {
+  background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility text-pretty {
+  text-wrap: pretty;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility hairline-b {
+  box-shadow: inset 0 -1px 0 var(--color-separator);
+}
+
+@utility hairline-t {
+  box-shadow: inset 0 1px 0 var(--color-separator);
+}
+
+/* iOS-like large title */
+@utility title-large {
+  font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+@utility title-1 {
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+@utility title-2 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  font-weight: 650;
+}
+
+@utility eyebrow {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-label-3);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Keyframes                                                           */
+/* ------------------------------------------------------------------ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@utility animate-rise {
+  animation: rise-in 0.45s var(--ease-ios) both;
+}
+
+@utility animate-pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+@utility animate-indeterminate {
+  animation: indeterminate 1.4s var(--ease-ios) infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Markdown prose (repo-authored content)                             */
+/* ------------------------------------------------------------------ */
+.prose-ios {
+  color: var(--color-label);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  max-width: 72ch;
+}
+.prose-ios > * + * {
+  margin-top: 1em;
+}
+.prose-ios h1,
+.prose-ios h2,
+.prose-ios h3,
+.prose-ios h4 {
+  color: var(--color-label);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  scroll-margin-top: 6rem;
+}
+.prose-ios h1 {
+  font-size: 1.9rem;
+  margin-top: 2.2em;
+}
+.prose-ios h2 {
+  font-size: 1.5rem;
+  margin-top: 2em;
+}
+.prose-ios h3 {
+  font-size: 1.2rem;
+  margin-top: 1.6em;
+}
+.prose-ios h4 {
+  font-size: 1.05rem;
+  margin-top: 1.4em;
+}
+.prose-ios p {
+  text-wrap: pretty;
+}
+.prose-ios a {
+  color: var(--color-tint);
+  text-decoration: none;
+  font-weight: 500;
+}
+.prose-ios a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-ios strong {
+  font-weight: 650;
+}
+.prose-ios ul,
+.prose-ios ol {
+  padding-left: 1.35em;
+}
+.prose-ios ul {
+  list-style: disc;
+}
+.prose-ios ol {
+  list-style: decimal;
+}
+.prose-ios li + li {
+  margin-top: 0.35em;
+}
+.prose-ios li::marker {
+  color: var(--color-label-3);
+}
+.prose-ios ul.contains-task-list {
+  list-style: none;
+  padding-left: 0.25em;
+}
+.prose-ios blockquote {
+  margin-left: 0;
+  padding: 0.85rem 1.1rem;
+  border-left: 3px solid var(--color-tint);
+  background: var(--color-tint-soft-2);
+  border-radius: 0 14px 14px 0;
+  color: var(--color-label-2);
+}
+.prose-ios blockquote > * + * {
+  margin-top: 0.5em;
+}
+.prose-ios code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-fill);
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+}
+.prose-ios pre {
+  background: #1d1d20;
+  color: #e6e6eb;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.prose-ios pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+.prose-ios hr {
+  border: 0;
+  height: 1px;
+  background: var(--color-separator);
+  margin: 2.2em 0;
+}
+.prose-ios img {
+  border-radius: 14px;
+  max-width: 100%;
+}
+.prose-ios .table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-separator);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+.prose-ios table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.prose-ios th,
+.prose-ios td {
+  text-align: left;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--color-separator);
+  vertical-align: top;
+}
+.prose-ios th {
+  font-weight: 600;
+  color: var(--color-label-2);
+  background: var(--color-surface-2);
+}
+.prose-ios tr:last-child td {
+  border-bottom: 0;
+}
+.prose-ios kbd {
+  font-family: var(--font-sans);
+  font-size: 0.85em;
+  padding: 0.1em 0.45em;
+  border-radius: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator-strong);
+  box-shadow: 0 1px 0 var(--color-separator-strong);
+}

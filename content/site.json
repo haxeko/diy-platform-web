@@ -1,0 +1,34 @@
+{
+  "name": "ESP Lab",
+  "shortName": "ESP Lab",
+  "tagline": "Dự án DIY ESP32 · Matter · Thread · Smart Home — nạp firmware ngay trên trình duyệt",
+  "description": "Nền tảng phát hành dự án DIY cho ESP32, Matter, Thread và tự động hoá nhà thông minh. Cắm bo mạch, chọn firmware, chip được nhận diện và nạp tự động — không cần cài phần mềm.",
+  "author": {
+    "name": "ESP Lab",
+    "email": "hello@example.com",
+    "github": "haxeko"
+  },
+  "donate": {
+    "intro": "Nếu các dự án giúp ích cho bạn, một ly cà phê sẽ giúp mình duy trì máy chủ, mua linh kiện thử nghiệm và tiếp tục phát hành firmware miễn phí.",
+    "momo": {
+      "enabled": true,
+      "phone": "0900000000",
+      "accountName": "NGUYEN VAN A",
+      "note": "Nội dung chuyển khoản: ESP Lab"
+    },
+    "buyMeACoffee": {
+      "enabled": true,
+      "username": "esplab"
+    },
+    "crypto": [
+      { "symbol": "USDT", "name": "Tether", "network": "TRON (TRC20)", "address": "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "note": "Phí thấp, phổ biến tại Việt Nam" },
+      { "symbol": "ETH", "name": "Ethereum", "network": "Ethereum / EVM (ERC20, BSC, Polygon)", "address": "0x0000000000000000000000000000000000000000", "uriScheme": "ethereum:" },
+      { "symbol": "BTC", "name": "Bitcoin", "network": "Bitcoin", "address": "bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "uriScheme": "bitcoin:" }
+    ],
+    "thanks": "Cảm ơn bạn đã đồng hành cùng cộng đồng DIY Việt Nam."
+  },
+  "footer": {
+    "disclaimer": "Các dự án liên quan đến điện lưới 220V tiềm ẩn nguy hiểm. Hãy ngắt nguồn trước khi thao tác và tự chịu trách nhiệm về an toàn khi thực hiện.",
+    "license": "Nội dung chia sẻ theo CC BY-NC-SA 4.0."
+  }
+}

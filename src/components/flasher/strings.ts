@@ -1,0 +1,61 @@
+import type { FlashPhase } from "@/lib/flash/client/engine";
+
+export const PHASE_LABEL: Record<FlashPhase, string> = {
+  idle: "Sẵn sàng",
+  "requesting-port": "Chọn cổng kết nối trong hộp thoại của trình duyệt…",
+  connecting: "Đang kết nối với bootloader…",
+  detecting: "Đang nhận diện chip…",
+  incompatible: "Chip không tương thích",
+  preparing: "Đang nhận gói firmware đã mã hoá…",
+  flashing: "Đang ghi firmware vào chip…",
+  finishing: "Đang khởi động lại thiết bị…",
+  done: "Hoàn tất",
+  error: "Có lỗi xảy ra",
+};
+
+export const PHASE_HINT: Partial<Record<FlashPhase, string>> = {
+  "requesting-port": "Chọn cổng có tên USB Serial, CP210x, CH340 hoặc USB JTAG/serial debug unit.",
+  connecting: "Nếu quá 10 giây chưa kết nối: giữ nút BOOT, nhấn RESET rồi thả BOOT.",
+  detecting: "Đọc thông tin chip, địa chỉ MAC và dung lượng flash.",
+  preparing: "Gói firmware được giải mã trong bộ nhớ trình duyệt, không tạo file tải về.",
+  flashing: "Không rút cáp hoặc đóng tab cho đến khi hoàn tất.",
+  finishing: "Thiết bị sẽ chạy firmware mới sau khi khởi động lại.",
+};
+
+export const STRINGS = {
+  connectAndFlash: "Kết nối & Flash",
+  flashAnother: "Flash thiết bị khác",
+  retry: "Thử lại",
+  cancel: "Huỷ",
+  advanced: "Tuỳ chọn nâng cao",
+  baud: "Tốc độ (baud)",
+  eraseAll: "Xoá toàn bộ flash trước khi ghi",
+  eraseAllHint: "Chậm hơn, xoá cả cấu hình Wi-Fi/Matter cũ. Dùng khi đổi dự án hoặc thiết bị hoạt động bất thường.",
+  log: "Nhật ký kỹ thuật",
+  chip: "Chip",
+  mac: "Địa chỉ MAC",
+  flashSize: "Dung lượng flash",
+  features: "Tính năng",
+  crystal: "Thạch anh",
+  detected: "Đã nhận diện",
+  supported: "Firmware hỗ trợ",
+  partOf: (i: number, n: number) => `Phần ${i}/${n}`,
+  doneTitle: "Flash thành công",
+  doneBody: (name: string, version: string, seconds: number) => `${name} v${version} đã được ghi vào thiết bị trong ${seconds} giây.`,
+  nextSteps: "Bước tiếp theo",
+  pickFirmware: "Chọn firmware",
+  version: "Phiên bản",
+  released: "Phát hành",
+  size: "Kích thước",
+  demoBadge: "Bản demo",
+  betaBadge: "Beta",
+  stableBadge: "Ổn định",
+  privacy: "Firmware được truyền mã hoá theo phiên và chỉ tồn tại trong bộ nhớ trình duyệt khi nạp. Không có file tải về.",
+  unsupportedTitle: "Trình duyệt chưa hỗ trợ Web Serial",
+  unsupportedBody: "Hãy mở trang này bằng Chrome, Edge, Opera hoặc Arc trên máy tính Windows, macOS, Linux hoặc ChromeOS. Safari, Firefox và trình duyệt trên điện thoại chưa hỗ trợ kết nối cổng USB.",
+  steps: [
+    { title: "Cắm bo mạch ESP vào máy tính", body: "Dùng cáp USB truyền dữ liệu. Với bo không có USB tích hợp, dùng mạch chuyển USB‑UART (CP2102, CH340)." },
+    { title: "Chọn firmware", body: "Chọn bản firmware phù hợp với dự án. Chip sẽ được nhận diện tự động, bạn không cần chọn loại bo." },
+    { title: "Nhấn Kết nối & Flash", body: "Chọn cổng trong hộp thoại của trình duyệt và chờ tiến trình hoàn tất." },
+  ],
+};
