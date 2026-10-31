@@ -14,6 +14,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Firmware binaries and content live outside /public; make sure serverless bundles include them.
+  outputFileTracingIncludes: {
+    "/api/flash/part": ["./firmware/**/*", "./content/**/*"],
+    "/api/flash/session": ["./firmware/**/*", "./content/**/*"],
+  },
   turbopack: {
     rules: {
       "*.css": {
