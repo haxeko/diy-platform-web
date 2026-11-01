@@ -135,6 +135,10 @@ Tên trang, mô tả, tác giả, MoMo (`phone`, `accountName`, tuỳ chọn `qr
 - **Vercel / serverless**: `next.config.ts` đã khai báo `outputFileTracingIncludes` để đóng gói `firmware/**` và `content/**` vào hàm API. Sổ cái “mỗi phần phát một lần” và bộ giới hạn tần suất nằm trong bộ nhớ từng instance, nên trên serverless chúng chỉ có hiệu lực theo từng instance; giới hạn kích thước bundle của nhà cung cấp áp dụng cho tổng dung lượng firmware.
 - Không đưa file firmware vào `public/` hay CDN tĩnh — điều đó sẽ bỏ qua toàn bộ cơ chế bảo vệ.
 
+### Raspberry Pi (OS Lite 64‑bit)
+
+Build trên máy tính rồi chép gói standalone sang Pi: `npm run package:pi` → `dist/machnha-pi-*.tar.gz` → trên Pi `sudo ./install-pi.sh [--with-caddy]`. Script cài Node 22 arm64, tạo dịch vụ systemd, sinh `FLASH_SECRET`, và tuỳ chọn Caddy HTTPS (bắt buộc để dùng Web Serial từ máy khác trong LAN). Hướng dẫn đầy đủ: [`scripts/pi/README-PI.md`](scripts/pi/README-PI.md).
+
 ## Cơ chế bảo vệ firmware và giới hạn
 
 1. `POST /api/flash/session` nhận `{firmwareId, chip}` → kiểm tra same‑origin (Sec‑Fetch‑*), rate limit, tìm bản dựng khớp chip, đối chiếu `sha256` → trả token HMAC‑SHA256 (hết hạn 10 phút) và khoá AES‑256‑GCM dẫn xuất bằng HKDF từ `FLASH_SECRET` + nonce phiên.

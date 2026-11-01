@@ -14,10 +14,13 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Firmware binaries and content live outside /public; make sure serverless bundles include them.
+  // Self-contained build (.next/standalone) for small hosts such as a Raspberry Pi: see scripts/pi/.
+  output: "standalone",
+  // No next/image usage → no sharp binary needed on the target machine.
+  images: { unoptimized: true },
+  // Firmware binaries and content live outside /public; make sure standalone/serverless bundles include them.
   outputFileTracingIncludes: {
-    "/api/flash/part": ["./firmware/**/*", "./content/**/*"],
-    "/api/flash/session": ["./firmware/**/*", "./content/**/*"],
+    "/**": ["./firmware/**/*", "./content/**/*"],
   },
   turbopack: {
     rules: {

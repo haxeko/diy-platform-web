@@ -1,0 +1,24 @@
+[Unit]
+Description=MachNha — DIY IoT firmware platform (Next.js standalone)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=machnha
+Group=machnha
+WorkingDirectory=/opt/machnha
+EnvironmentFile=/opt/machnha/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/local/bin/node server.js
+Restart=always
+RestartSec=3
+# Raspberry Pi 3 has 1 GB RAM: keep V8 within bounds and let systemd restart on runaway.
+MemoryMax=600M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

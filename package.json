@@ -13,7 +13,8 @@
     "check": "npm run typecheck && npm run lint && npm run content:check && npm run build",
     "smoke": "node scripts/smoke-flash-api.mjs",
     "test:e2e": "node tests/e2e/flash.e2e.mjs",
-    "content:check": "node scripts/content-check.mjs"
+    "content:check": "node scripts/content-check.mjs",
+    "package:pi": "bash scripts/pi/package.sh"
   },
   "dependencies": {
     "esptool-js": "^0.7.0",

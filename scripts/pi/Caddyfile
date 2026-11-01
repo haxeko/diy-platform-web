@@ -1,0 +1,11 @@
+# Caddy reverse proxy for MachNha on a LAN Raspberry Pi.
+# Web Serial only works on secure contexts, so the site must be served over HTTPS when
+# opened from another computer. `tls internal` issues a certificate from Caddy's local CA;
+# import /var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt on each PC once.
+#
+# Replace the host names with your Pi's name/IP (keep the ones you use):
+raspberrypi.local, machnha.local, 192.168.1.50 {
+	tls internal
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}
