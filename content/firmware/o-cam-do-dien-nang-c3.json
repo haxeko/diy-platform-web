@@ -1,0 +1,41 @@
+{
+  "id": "o-cam-do-dien-nang-c3",
+  "name": "MachNha Plug Energy C3",
+  "version": "1.0.0",
+  "project": "o-cam-do-dien-nang-c3",
+  "summary": "Ổ cắm Matter over Wi-Fi cho ESP32-C3 với đo điện năng BL0942 (công suất, điện áp, dòng, năng lượng). Hiệu chuẩn qua Serial Monitor.",
+  "releasedAt": "2026-10-31",
+  "status": "beta",
+  "changelog": [
+    "Bản beta đầu tiên: On/Off Plug-in Unit + Electrical Power/Energy Measurement (Matter 1.3)",
+    "Đọc BL0942 qua UART 4800 baud, hiệu chuẩn hệ số lưu trong NVS",
+    "Lệnh hiệu chuẩn qua Serial Monitor: cal.v <điện áp>, cal.i <dòng>, cal.save"
+  ],
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "offset": "0x0", "file": "bootloader.bin", "label": "bootloader" },
+        { "offset": "0x8000", "file": "partition-table.bin", "label": "partition-table" },
+        { "offset": "0x10000", "file": "machnha-plug-energy-c3.bin", "label": "app" }
+      ],
+      "flashMode": "keep",
+      "flashFreq": "keep",
+      "flashSize": "keep",
+      "eraseAll": false
+    }
+  ],
+  "afterFlash": [
+    "Rút USB, lắp board vào vỏ và đóng nắp hoàn chỉnh rồi mới cấp điện 220 V — không bao giờ cắm USB khi mạch đang nối lưới.",
+    "LED nhấp nháy chậm: chờ ghép nối; sáng ổn định: đã có Wi-Fi; nhấp nháy nhanh: mất Wi-Fi.",
+    "Ghép nối: mở ứng dụng → Thêm phụ kiện → quét mã QR trong Serial Monitor (chỉ khi còn cắm USB và CHƯA nối 220 V) hoặc nhập mã ghép nối in trong bài dự án.",
+    "Reset về mặc định: giữ nút trên ổ cắm 10 giây cho đến khi LED nhấp nháy nhanh.",
+    "Số đo sai lệch: hiệu chuẩn lại với bóng đèn sợi đốt và đồng hồ vạn năng theo hướng dẫn trong bài."
+  ],
+  "tags": ["matter", "wi-fi", "ổ cắm", "điện năng", "220V"],
+  "demo": true,
+  "license": "Apache-2.0",
+  "source": "https://github.com/espressif/esp-matter",
+  "minFlashMB": 4,
+  "pairing": { "qr": "MT:Y.K9042C00KA0648G00", "manualCode": "34970112332" }
+}

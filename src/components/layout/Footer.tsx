@@ -27,6 +27,11 @@ export function Footer({ site }: { site: SiteConfig }) {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/bao-ve-firmware" className="text-label-2 hover:text-label">
+                Bảo vệ firmware
+              </Link>
+            </li>
           </ul>
         </nav>
         <div>

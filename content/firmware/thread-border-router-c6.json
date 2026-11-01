@@ -1,0 +1,33 @@
+{
+  "id": "thread-border-router-c6",
+  "name": "MachNha Border Router C6",
+  "version": "1.0.0",
+  "project": "thread-border-router-c6",
+  "summary": "Thread Border Router một chip cho ESP32-C6-DevKitC-1 (8 MB): Wi-Fi + OpenThread cùng chạy, cấu hình Wi-Fi qua captive portal, quảng bá _meshcop._udp để Home Assistant tự phát hiện. Dành cho Home Assistant / Matter Server, không thay được Apple TV hay Nest Hub.",
+  "releasedAt": "2026-10-31",
+  "status": "beta",
+  "changelog": [
+    "Bản beta đầu tiên: OpenThread Border Router một chip trên ESP32-C6 (Wi-Fi + 802.15.4 coexistence), dựa trên ví dụ ot_br của ESP-IDF.",
+    "Captive portal cấu hình Wi-Fi (AP MachNha-BR-xxxx, 192.168.4.1), mDNS _meshcop._udp và REST API kiểu OTBR trên cổng 8081.",
+    "Giữ nút BOOT 10 giây để xoá Wi-Fi và Thread dataset."
+  ],
+  "builds": [
+    { "chipFamily": "ESP32-C6", "parts": [
+      { "offset": "0x0", "file": "bootloader.bin", "label": "bootloader" },
+      { "offset": "0x8000", "file": "partition-table.bin", "label": "partition-table" },
+      { "offset": "0x10000", "file": "machnha-br-c6.bin", "label": "app" } ],
+      "flashMode": "keep", "flashFreq": "keep", "flashSize": "keep", "eraseAll": true, "baudrate": 460800 }
+  ],
+  "afterFlash": [
+    "Rút cáp rồi cắm lại (hoặc nhấn RESET) để bo khởi động với firmware mới và chờ khoảng 10 giây.",
+    "LED trên bo: nhấp nháy vàng = chờ cấu hình Wi-Fi, nhấp nháy xanh dương = đang nối Wi-Fi, xanh lá ổn định = Border Router đang chạy, nhấp nháy đỏ = mất Wi-Fi.",
+    "Trên điện thoại nối Wi-Fi tên MachNha-BR-xxxx, mở http://192.168.4.1 để nhập Wi-Fi nhà (2.4 GHz); sau đó vào Home Assistant → Cài đặt → Thiết bị & dịch vụ → Thread để thêm Border Router này và đặt làm mạng ưu tiên.",
+    "Reset về mặc định: giữ nút BOOT 10 giây khi bo đang chạy (LED nháy tím) để xoá Wi-Fi và Thread dataset, hoặc nạp lại với chế độ Cài mới.",
+    "Lỗi thường gặp: không thấy mạng MachNha-BR → chờ 15 giây hoặc giữ BOOT 10 giây; không mở được 192.168.4.1 → tắt dữ liệu di động và dùng http://; Home Assistant không thấy BR → phải cùng subnet, mDNS không đi qua VLAN; node chậm → dời BR cách router Wi-Fi ít nhất 1 m."
+  ],
+  "tags": ["thread", "border-router", "home-assistant"],
+  "demo": true,
+  "license": "Apache-2.0",
+  "source": "https://github.com/espressif/esp-thread-br",
+  "minFlashMB": 8
+}

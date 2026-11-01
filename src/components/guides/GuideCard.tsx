@@ -8,7 +8,7 @@ import { formatDateVi, GUIDE_CATEGORY_LABEL } from "@/lib/format";
 export function GuideCard({ guide }: { guide: Guide }) {
   return (
     <Card as="article" padding="none" interactive className="relative">
-      <Link href={`/guides/${guide.slug}`} className="flex items-start gap-4 p-5 outline-none">
+      <Link href={`/huong-dan/${guide.slug}`} className="flex items-start gap-4 p-5 outline-none">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="tint" size="sm">

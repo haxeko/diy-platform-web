@@ -14,8 +14,14 @@ export const metadata: Metadata = {
   description: "Cắm bo mạch ESP, chọn firmware, chip được nhận diện và nạp tự động ngay trên trình duyệt.",
 };
 
-export default async function FirmwarePage({ searchParams }: { searchParams: Promise<{ fw?: string; chip?: string }> }) {
-  const { fw, chip } = await searchParams;
+function first(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+export default async function FirmwarePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const fw = first(sp.fw);
+  const chip = first(sp.chip);
   const [manifests, projects] = await Promise.all([getFirmwareManifests(), getProjects()]);
   const published = manifests.filter((m) => m.status !== "deprecated");
   const all = await Promise.all(published.map(toFirmwarePublic));

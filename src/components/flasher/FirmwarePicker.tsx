@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { cn } from "@/lib/cn";
 import type { FirmwarePublic } from "@/lib/flash/shared";
 import { formatBytes, formatDateVi } from "@/lib/format";
@@ -25,26 +26,32 @@ export function FirmwarePicker({
   disabled?: boolean;
   projects?: Record<string, ProjectRef>;
 }) {
+  const name = useId();
   return (
     <fieldset disabled={disabled} className="min-w-0">
       <legend className="eyebrow mb-2 px-1">{STRINGS.pickFirmware}</legend>
-      <div role="radiogroup" aria-label={STRINGS.pickFirmware} className="grid gap-2">
+      {disabled && <p className="mb-2 px-1 text-[0.8rem] text-label-3">Ngắt kết nối hoặc nhấn “Nạp board khác” để đổi firmware.</p>}
+      <div className="grid gap-2">
         {firmwares.map((fw) => {
           const active = fw.id === selectedId;
           const size = Object.values(fw.sizes)[0];
           return (
-            <button
+            <label
               key={fw.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onSelect(fw.id)}
               className={cn(
-                "flex w-full items-start gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-200 ease-[var(--ease-ios)]",
+                "relative flex w-full cursor-pointer items-start gap-3 rounded-[16px] border px-4 py-3 transition-all duration-200 ease-[var(--ease-ios)] has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[color-mix(in_srgb,var(--color-tint)_45%,transparent)]",
                 active ? "border-tint bg-tint-soft-2 shadow-[0_0_0_3px_rgb(10_122_255/0.12)]" : "border-separator bg-surface hover:bg-surface-2",
-                disabled && "opacity-60",
+                disabled && "cursor-default opacity-60",
               )}
             >
+              <input
+                type="radio"
+                name={name}
+                value={fw.id}
+                checked={active}
+                onChange={() => onSelect(fw.id)}
+                className="sr-only"
+              />
               <span
                 aria-hidden="true"
                 className={cn(
@@ -76,7 +83,7 @@ export function FirmwarePicker({
                   </span>
                 </span>
               </span>
-            </button>
+            </label>
           );
         })}
       </div>

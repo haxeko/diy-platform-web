@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit",
     "firmware:add": "node scripts/firmware-add.mjs",
     "firmware:demo": "node scripts/firmware-make-demo.mjs",
-    "check": "npm run typecheck && npm run lint && npm run build",
-    "smoke": "node scripts/smoke-flash-api.mjs"
+    "check": "npm run typecheck && npm run lint && npm run content:check && npm run build",
+    "smoke": "node scripts/smoke-flash-api.mjs",
+    "test:e2e": "node tests/e2e/flash.e2e.mjs",
+    "content:check": "node scripts/content-check.mjs"
   },
   "dependencies": {
     "esptool-js": "^0.7.0",

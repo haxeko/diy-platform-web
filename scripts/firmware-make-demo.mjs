@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * Creates placeholder binaries for every part referenced by content/firmware/*.json
- * that does not exist yet under firmware/<id>/<version>/.
+ * manifests marked `"demo": true` that does not exist yet under firmware/<id>/<version>/.
  *
  * The placeholders are NOT bootable images: they start with 0xFF padding and a
- * plain-text marker so nobody mistakes them for real firmware. Replace them with
- * your real build artefacts (bootloader.bin, partition-table.bin, app.bin …) and
- * set `"demo": false` in the manifest.
+ * plain-text marker so nobody mistakes them for real firmware. Manifests with
+ * `"demo": false` are skipped on purpose — real firmware must be added with
+ * `npm run firmware:add`.
  *
  * Usage: npm run firmware:demo
  */
@@ -23,7 +23,7 @@ function sizeFor(label, file) {
   const key = (label ?? file ?? "").toLowerCase();
   if (key.includes("boot")) return SIZES.bootloader;
   if (key.includes("partition")) return SIZES["partition-table"];
-  if (key.includes("app") || key.includes("firmware")) return SIZES.app;
+  if (key.includes("app") || key.includes("firmware") || key.endsWith(".bin")) return SIZES.app;
   return SIZES.default;
 }
 
@@ -38,19 +38,21 @@ function placeholder(size, meta) {
 }
 
 let created = 0;
+let skipped = 0;
 const files = (await fs.readdir(manifestsDir).catch(() => [])).filter((f) => f.endsWith(".json"));
 for (const file of files) {
   const manifest = JSON.parse(await fs.readFile(path.join(manifestsDir, file), "utf8"));
+  if (manifest.demo !== true) {
+    skipped += 1;
+    continue;
+  }
   for (const build of manifest.builds ?? []) {
     for (const part of build.parts ?? []) {
       const dir = path.join(storeDir, manifest.id, manifest.version);
       const target = path.join(dir, part.file);
-      try {
-        await fs.access(target);
-        continue;
-      } catch {
-        /* missing → create */
-      }
+      const exists = await fs.access(target).then(() => true, () => false);
+      const existsEnc = await fs.access(`${target}.enc`).then(() => true, () => false);
+      if (exists || existsEnc) continue;
       await fs.mkdir(dir, { recursive: true });
       const size = sizeFor(part.label, part.file);
       await fs.writeFile(
@@ -62,4 +64,5 @@ for (const file of files) {
     }
   }
 }
-console.log(created ? `Đã tạo ${created} file demo.` : "Không thiếu file nào.");
+console.log(created ? `Đã tạo ${created} file demo.` : "Không thiếu file demo nào.");
+if (skipped) console.log(`Bỏ qua ${skipped} manifest không phải demo (demo: false) — thêm firmware thật bằng npm run firmware:add.`);

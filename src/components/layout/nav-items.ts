@@ -1,6 +1,6 @@
 export const NAV_ITEMS = [
-  { href: "/projects", label: "Dự án" },
+  { href: "/du-an", label: "Dự án" },
   { href: "/firmware", label: "Firmware" },
-  { href: "/guides", label: "Hướng dẫn" },
-  { href: "/support", label: "Ủng hộ" },
+  { href: "/huong-dan", label: "Hướng dẫn" },
+  { href: "/ung-ho", label: "Ủng hộ" },
 ] as const;

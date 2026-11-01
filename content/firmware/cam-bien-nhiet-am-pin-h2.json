@@ -1,0 +1,34 @@
+{
+  "id": "cam-bien-nhiet-am-pin-h2",
+  "name": "MachNha Climate H2",
+  "version": "1.0.0",
+  "project": "cam-bien-nhiet-am-pin-h2",
+  "summary": "Cảm biến nhiệt độ – độ ẩm SHT40 chạy pin cho ESP32-H2, Matter over Thread, Sleepy End Device đo mỗi 60 giây. Ghép nối bằng mã QR với Apple Home, Google Home, Home Assistant. Cần Thread Border Router.",
+  "releasedAt": "2026-10-31",
+  "status": "stable",
+  "changelog": [
+    "Bản phát hành đầu tiên: SHT40 qua I²C (GPIO10/GPIO11), Sleepy End Device với poll period 5 giây, đo mỗi 60 giây",
+    "Báo mức pin qua cluster Power Source (tuỳ chọn cầu chia ADC trên GPIO1)",
+    "Factory reset bằng cách giữ nút BOOT 10 giây"
+  ],
+  "builds": [
+    { "chipFamily": "ESP32-H2", "parts": [
+      { "offset": "0x0", "file": "bootloader.bin", "label": "bootloader" },
+      { "offset": "0x8000", "file": "partition-table.bin", "label": "partition-table" },
+      { "offset": "0x10000", "file": "machnha-climate-h2.bin", "label": "app" } ],
+      "flashMode": "keep", "flashFreq": "keep", "flashSize": "keep", "eraseAll": false, "baudrate": 460800 }
+  ],
+  "afterFlash": [
+    "Mở Serial Monitor để ghi lại mã QR và mã 11 số in trong log, rồi rút cáp USB, lắp 2 pin AA (hoặc CR123A) và nhấn RESET để thiết bị khởi động bằng nguồn pin.",
+    "LED RGB nháy xanh dương chậm là đang chờ ghép nối qua BLE; nháy xanh lá vài lần rồi tắt hẳn là đã vào mạng Thread (LED tắt để tiết kiệm pin).",
+    "Mở Apple Home, Google Home hoặc Home Assistant → Thêm phụ kiện → quét mã QR trong Serial Monitor hoặc nhập mã thủ công 11 số; chọn Vẫn thêm khi app báo phụ kiện chưa được chứng nhận.",
+    "Muốn về mặc định: giữ nút BOOT 10 giây cho đến khi LED nháy đỏ ba lần, thiết bị xoá fabric Matter và quay lại chờ ghép nối.",
+    "Nếu không thấy giá trị hoặc thiết bị không phản hồi: kiểm tra SDA/SCL và pull-up 4,7 kΩ, đưa thiết bị gần Border Router hơn, đo điện áp pin phải từ 3,0 V trở lên."
+  ],
+  "tags": ["matter", "thread", "cảm biến", "pin"],
+  "demo": true,
+  "license": "Apache-2.0",
+  "source": "https://github.com/espressif/esp-matter",
+  "minFlashMB": 4,
+  "pairing": { "qr": "MT:Y.K9042C00KA0648G00", "manualCode": "34970112332" }
+}

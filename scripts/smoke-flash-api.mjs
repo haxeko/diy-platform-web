@@ -10,7 +10,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
-const FW_ID = process.env.FW_ID ?? "smoke-test";
+const FW_ID = process.env.FW_ID ?? "cong-tac-den-matter-thread-c6";
 const CHIP = process.env.CHIP ?? "ESP32-C6";
 
 const fetchHeaders = { "sec-fetch-site": "same-origin", "sec-fetch-dest": "empty", "sec-fetch-mode": "cors" };
@@ -42,24 +42,28 @@ const key = Buffer.from(session.key, "base64");
 check("key is 32 bytes", key.length === 32);
 const nonce = JSON.parse(Buffer.from(session.token.split(".")[0], "base64url").toString()).n;
 
+const auth = (token) => ({ ...fetchHeaders, authorization: `Bearer ${token}` });
+
 // 5. Direct navigation to a part → 403
-r = await fetch(`${BASE}/api/flash/part?t=${encodeURIComponent(session.token)}&i=0`, { headers: { "sec-fetch-site": "none", "sec-fetch-dest": "document", "sec-fetch-mode": "navigate" } });
+r = await fetch(`${BASE}/api/flash/part?i=0`, { headers: { authorization: `Bearer ${session.token}`, "sec-fetch-site": "none", "sec-fetch-dest": "document", "sec-fetch-mode": "navigate" } });
 check("address-bar navigation to part is rejected", r.status === 403, `status ${r.status}`);
 
-// 6. Tampered token → 403
+// 6. Tampered / missing token → 403
 const tampered = session.token.slice(0, -2) + (session.token.endsWith("A") ? "BB" : "AA");
-r = await fetch(`${BASE}/api/flash/part?t=${encodeURIComponent(tampered)}&i=0`, { headers: fetchHeaders });
+r = await fetch(`${BASE}/api/flash/part?i=0`, { headers: auth(tampered) });
 check("tampered token is rejected", r.status === 403, `status ${r.status}`);
+r = await fetch(`${BASE}/api/flash/part?i=0&t=${encodeURIComponent(session.token)}`, { headers: fetchHeaders });
+check("token in the query string is ignored (must be a Bearer header)", r.status === 403, `status ${r.status}`);
 
 // 7. Out-of-range index → 404
-r = await fetch(`${BASE}/api/flash/part?t=${encodeURIComponent(session.token)}&i=${session.build.parts.length}`, { headers: fetchHeaders });
+r = await fetch(`${BASE}/api/flash/part?i=${session.build.parts.length}`, { headers: auth(session.token) });
 check("out-of-range part index → 404", r.status === 404, `status ${r.status}`);
 
 // 8. Fetch + decrypt every part and compare with disk
 const manifest = JSON.parse(await fs.readFile(path.join("content", "firmware", `${FW_ID}.json`), "utf8"));
 const build = manifest.builds.find((b) => b.chipFamily === session.build.chipFamily);
 for (const part of session.build.parts) {
-  r = await fetch(`${BASE}/api/flash/part?t=${encodeURIComponent(session.token)}&i=${part.index}`, { headers: fetchHeaders });
+  r = await fetch(`${BASE}/api/flash/part?i=${part.index}`, { headers: auth(session.token) });
   check(`part ${part.index} served`, r.status === 200, `status ${r.status}`);
   check(`part ${part.index} is no-store, inline, octet-stream`, (r.headers.get("cache-control") ?? "").includes("no-store") && r.headers.get("content-disposition") === "inline" && r.headers.get("content-type") === "application/octet-stream");
   const wire = Buffer.from(await r.arrayBuffer());
@@ -68,7 +72,7 @@ for (const part of session.build.parts) {
   d.setAAD(Buffer.from(`${nonce}:${part.index}`));
   d.setAuthTag(tag);
   let plain;
-  try { plain = Buffer.concat([d.update(ct), d.final()]); } catch (e) { plain = null; }
+  try { plain = Buffer.concat([d.update(ct), d.final()]); } catch { plain = null; }
   check(`part ${part.index} decrypts`, plain !== null);
   if (plain) {
     const onDisk = await fs.readFile(path.join("firmware", manifest.id, manifest.version, build.parts[part.index].file));
@@ -79,6 +83,9 @@ for (const part of session.build.parts) {
   const d2 = createDecipheriv("aes-256-gcm", key, iv); d2.setAAD(Buffer.from(`${nonce}:${part.index + 1}`)); d2.setAuthTag(tag);
   let swapped = true; try { d2.update(ct); d2.final(); } catch { swapped = false; }
   check(`part ${part.index} rejects swapped index (AAD)`, swapped === false);
+  // single-use: the same part cannot be fetched twice in one session
+  r = await fetch(`${BASE}/api/flash/part?i=${part.index}`, { headers: auth(session.token) });
+  check(`part ${part.index} is served only once per session (410 token-consumed)`, r.status === 410 && (await r.json()).code === "token-consumed", `status ${r.status}`);
 }
 
 // 9. Nothing under /firmware is served statically

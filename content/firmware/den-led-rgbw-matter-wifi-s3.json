@@ -1,0 +1,34 @@
+{
+  "id": "den-led-rgbw-matter-wifi-s3",
+  "name": "MachNha Glow S3",
+  "version": "1.0.0",
+  "project": "den-led-rgbw-matter-wifi-s3",
+  "summary": "Đèn Matter over Wi-Fi kiểu Extended Color Light cho ESP32-S3, điều khiển dải SK6812 RGBW hoặc WS2812B qua RMT. Hỗ trợ màu, nhiệt độ màu dùng kênh W và độ sáng; ghép đôi QR qua BLE, Wi-Fi 2.4 GHz. Bản demo, Test VID 0xFFF1.",
+  "releasedAt": "2026-10-31",
+  "status": "beta",
+  "changelog": [
+    "Bản beta đầu tiên: Extended Color Light với OnOff, LevelControl và ColorControl (HS/XY/nhiệt độ màu 2700–6500 K)",
+    "Hỗ trợ dải SK6812 RGBW (ưu tiên kênh W) và WS2812B RGB, data trên GPIO4, LED trạng thái GPIO48",
+    "Giữ BOOT 10 giây để reset về mặc định; nhấn nhanh BOOT để đổi hiệu ứng"
+  ],
+  "builds": [
+    { "chipFamily": "ESP32-S3", "parts": [
+      { "offset": "0x0", "file": "bootloader.bin", "label": "bootloader" },
+      { "offset": "0x8000", "file": "partition-table.bin", "label": "partition-table" },
+      { "offset": "0x10000", "file": "machnha-glow-s3.bin", "label": "app" } ],
+      "flashMode": "keep", "flashFreq": "keep", "flashSize": "keep", "eraseAll": false, "baudrate": 460800 }
+  ],
+  "afterFlash": [
+    "Rút cáp USB, cắm adapter 5V cho dải LED trước, rồi cấp nguồn lại cho bo (qua USB hoặc chân 5V-in) và chờ khoảng 5 giây.",
+    "LED RGB trên bo nháy xanh dương chậm là đang chờ ghép đôi; nháy nhanh là đang kết nối Wi-Fi; sáng xanh lá 2 giây rồi tắt là đã vào mạng.",
+    "Mở Apple Home, Google Home hoặc Home Assistant, chọn Thêm phụ kiện, quét mã QR in trong Serial Monitor hoặc nhập mã thủ công 11 số; khi báo chưa được chứng nhận, chọn Vẫn thêm.",
+    "Để xoá fabric và ghép lại từ đầu, giữ nút BOOT 10 giây cho đến khi LED nháy tím rồi bo khởi động lại.",
+    "Nếu LED đầu dải nhấp nháy hãy kiểm tra 74AHCT125 và GND chung; nếu không ghép được, bảo đảm điện thoại đang ở mạng Wi-Fi 2.4 GHz và đã bật Bluetooth."
+  ],
+  "tags": ["matter", "wi-fi", "đèn", "led"],
+  "demo": true,
+  "license": "Apache-2.0",
+  "source": "https://github.com/espressif/esp-matter",
+  "minFlashMB": 8,
+  "pairing": { "qr": "MT:Y.K9042C00KA0648G00", "manualCode": "34970112332" }
+}

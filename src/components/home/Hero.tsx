@@ -17,7 +17,7 @@ export function Hero({ siteName, tagline }: { siteName: string; tagline: string 
             <Button href="/firmware" size="lg" icon={<IconBolt size={20} />}>
               Flash firmware
             </Button>
-            <Button href="/projects" size="lg" variant="tinted" iconRight={<IconArrowRight size={20} />}>
+            <Button href="/du-an" size="lg" variant="tinted" iconRight={<IconArrowRight size={20} />}>
               Khám phá dự án
             </Button>
           </div>

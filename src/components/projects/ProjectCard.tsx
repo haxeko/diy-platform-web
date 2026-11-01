@@ -15,7 +15,7 @@ export type ProjectCardData = Pick<
 export function ProjectCard({ project, className }: { project: ProjectCardData; className?: string }) {
   return (
     <Card as="article" padding="none" interactive className={cn("overflow-hidden", className)}>
-      <Link href={`/projects/${project.slug}`} className="flex h-full flex-col outline-none">
+      <Link href={`/du-an/${project.slug}`} className="flex h-full flex-col outline-none">
         <div className={cn("flex h-36 items-center justify-center", ACCENT_SOFT_BG[project.accent])}>
           <span className={cn("text-5xl drop-shadow-sm", ACCENT_TEXT[project.accent])} aria-hidden="true">
             {project.icon}

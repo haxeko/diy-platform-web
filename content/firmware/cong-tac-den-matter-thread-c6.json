@@ -1,0 +1,42 @@
+{
+  "id": "cong-tac-den-matter-thread-c6",
+  "name": "MachNha Switch",
+  "version": "1.0.0",
+  "project": "cong-tac-den-matter-thread-c6",
+  "summary": "Công tắc đèn Matter over Thread 1–2 kênh cho ESP32-C6: relay opto cách ly, nút nhấn tại chỗ hoạt động khi mất mạng, ghép nối thẳng vào Apple Home / Google Home / Home Assistant. Bản demo dùng Test VID 0xFFF1 / PID 0x8000.",
+  "releasedAt": "2026-10-31",
+  "status": "stable",
+  "changelog": [
+    "Bản phát hành đầu tiên: 2 kênh relay, nút nhấn tại chỗ, OnOff cluster chuẩn Matter",
+    "Factory reset bằng cách giữ nút BOOT 10 giây",
+    "Khôi phục trạng thái đèn sau mất điện (lưu trong NVS)"
+  ],
+  "builds": [
+    {
+      "chipFamily": "ESP32-C6",
+      "parts": [
+        { "offset": "0x0", "file": "bootloader.bin", "label": "bootloader" },
+        { "offset": "0x8000", "file": "partition-table.bin", "label": "partition-table" },
+        { "offset": "0x10000", "file": "machnha-switch-c6.bin", "label": "app" }
+      ],
+      "flashMode": "keep",
+      "flashFreq": "keep",
+      "flashSize": "keep",
+      "eraseAll": false,
+      "baudrate": 460800
+    }
+  ],
+  "afterFlash": [
+    "Rút cáp USB rồi cấp nguồn lại cho bo (hoặc nhấn nút RST) để firmware khởi động sạch.",
+    "LED RGB trên bo nháy xanh dương là đang chờ ghép nối, nháy xanh lá là đang vào mạng Thread, tắt hẳn là đã kết nối xong.",
+    "Mở Apple Home / Google Home / Home Assistant → Thêm phụ kiện → quét mã QR in trong Serial Monitor hoặc nhập mã thủ công 11 số; Apple báo 'Phụ kiện chưa được chứng nhận' thì chọn Vẫn thêm.",
+    "Muốn xoá hết fabric và ghép lại từ đầu, giữ nút BOOT khoảng 10 giây đến khi LED nháy đỏ và bo khởi động lại.",
+    "App không thấy thiết bị: kiểm tra Border Router đang bật, Bluetooth điện thoại đang mở và LED còn nháy xanh dương; nếu không, factory reset rồi thử lại."
+  ],
+  "tags": ["matter", "thread", "công tắc", "220V"],
+  "demo": true,
+  "license": "Apache-2.0",
+  "source": "https://github.com/espressif/esp-matter",
+  "minFlashMB": 4,
+  "pairing": { "qr": "MT:Y.K9042C00KA0648G00", "manualCode": "34970112332" }
+}

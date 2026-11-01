@@ -40,7 +40,7 @@ export default async function FirmwareDetailPage({ params }: { params: Promise<{
           <li aria-hidden="true"><IconChevronRight size={16} /></li>
           {project && (
             <>
-              <li><Link href={`/projects/${project.slug}`} className="hover:text-label">{project.title}</Link></li>
+              <li><Link href={`/du-an/${project.slug}`} className="hover:text-label">{project.title}</Link></li>
               <li aria-hidden="true"><IconChevronRight size={16} /></li>
             </>
           )}
@@ -75,7 +75,7 @@ export default async function FirmwareDetailPage({ params }: { params: Promise<{
               value={firmware.sizes[b.chipFamily] ? formatBytes(firmware.sizes[b.chipFamily]!) : "—"}
             />
           ))}
-          {project && <GroupedRow label="Dự án" value={project.title} href={`/projects/${project.slug}`} />}
+          {project && <GroupedRow label="Dự án" value={project.title} href={`/du-an/${project.slug}`} />}
           <GroupedRow label="Firmware khác" href="/firmware" />
         </GroupedList>
 
@@ -97,7 +97,7 @@ export default async function FirmwareDetailPage({ params }: { params: Promise<{
       </div>
 
       <section id="huong-dan" className="mt-16 scroll-mt-20">
-        <FlashGuide afterFlash={manifest.afterFlash} projectHref={project ? `/projects/${project.slug}` : undefined} />
+        <FlashGuide afterFlash={manifest.afterFlash} projectHref={project ? `/du-an/${project.slug}` : undefined} />
       </section>
     </Container>
   );

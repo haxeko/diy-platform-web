@@ -1,0 +1,40 @@
+{
+  "id": "cam-bien-cua-matter-wifi-c3",
+  "name": "MachNha Contact C3",
+  "version": "1.0.0",
+  "project": "cam-bien-cua-matter-wifi-c3",
+  "summary": "Cảm biến cửa Matter over Wi-Fi cho ESP32-C3 (Contact Sensor). Ghép nối bằng QR, LED trạng thái, reset bằng nút BOOT.",
+  "releasedAt": "2026-10-31",
+  "status": "stable",
+  "changelog": [
+    "Bản phát hành đầu tiên: Contact Sensor (BooleanState), debounce 50 ms",
+    "Giảm công suất Wi-Fi mặc định còn 15 dBm cho board Super Mini"
+  ],
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "offset": "0x0", "file": "bootloader.bin", "label": "bootloader" },
+        { "offset": "0x8000", "file": "partition-table.bin", "label": "partition-table" },
+        { "offset": "0x10000", "file": "machnha-contact-c3.bin", "label": "app" }
+      ],
+      "flashMode": "keep",
+      "flashFreq": "keep",
+      "flashSize": "keep",
+      "eraseAll": false
+    }
+  ],
+  "afterFlash": [
+    "Rút cáp USB rồi cắm lại (hoặc nhấn RESET) để thiết bị khởi động với firmware mới.",
+    "LED trên board nhấp nháy chậm nghĩa là thiết bị đang chờ ghép nối; sáng ổn định là đã có Wi-Fi.",
+    "Mở ứng dụng Nhà / Google Home / Home Assistant → Thêm phụ kiện → quét mã QR trong Serial Monitor hoặc nhập mã ghép nối 11 số.",
+    "Reset về mặc định: giữ nút BOOT 10 giây cho đến khi LED nhấp nháy nhanh.",
+    "Không ghép nối được: kiểm tra điện thoại đang ở Wi-Fi 2,4 GHz, đưa board gần router, hoặc nạp lại với chế độ Cài mới."
+  ],
+  "tags": ["matter", "wi-fi", "cảm biến", "giá rẻ"],
+  "demo": true,
+  "license": "Apache-2.0",
+  "source": "https://github.com/espressif/esp-matter",
+  "minFlashMB": 4,
+  "pairing": { "qr": "MT:Y.K9042C00KA0648G00", "manualCode": "34970112332" }
+}

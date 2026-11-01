@@ -46,7 +46,7 @@ export default async function HomePage() {
         </section>
 
         <section aria-labelledby="projects">
-          <SectionHeader id="projects" title="Dự án nổi bật" description="Matter over Thread, Matter over Wi‑Fi, cảm biến, công tắc — kèm firmware sẵn sàng nạp." href="/projects" />
+          <SectionHeader id="projects" title="Dự án nổi bật" description="Matter over Thread, Matter over Wi‑Fi, cảm biến, công tắc — kèm firmware sẵn sàng nạp." href="/du-an" />
           {featured.length ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {featured.map((p) => (
@@ -79,7 +79,7 @@ export default async function HomePage() {
             )}
           </div>
           <div>
-            <SectionHeader title="Bắt đầu" description="Đọc trước nếu đây là lần đầu bạn làm với Matter/Thread." href="/guides" />
+            <SectionHeader title="Bắt đầu" description="Đọc trước nếu đây là lần đầu bạn làm với Matter/Thread." href="/huong-dan" />
             <div className="grid gap-3">
               {starterGuides.map((g) => (
                 <GuideCard key={g.slug} guide={g} />
@@ -102,13 +102,13 @@ export default async function HomePage() {
               </ul>
             </div>
             <div className="flex lg:justify-end">
-              <Button href="/support" size="lg" className="bg-rose hover:bg-[#9a1f45]" icon={<IconHeart size={20} />}>
+              <Button href="/ung-ho" size="lg" className="bg-rose hover:bg-[#9a1f45]" icon={<IconHeart size={20} />}>
                 Ủng hộ dự án
               </Button>
             </div>
           </Card>
           <p className="sr-only">
-            <Link href="/support">Đến trang ủng hộ</Link>
+            <Link href="/ung-ho">Đến trang ủng hộ</Link>
           </p>
         </section>
       </Container>

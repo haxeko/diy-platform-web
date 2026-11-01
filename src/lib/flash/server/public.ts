@@ -32,5 +32,10 @@ export async function toFirmwarePublic(m: FirmwareManifest): Promise<FirmwarePub
     chips: supportedChips(m),
     sizes,
     demo: m.demo,
+    forceErase: m.builds.every((b) => b.eraseAll),
+    license: m.license,
+    source: m.source,
+    minFlashMB: m.minFlashMB,
+    pairing: m.pairing,
   };
 }

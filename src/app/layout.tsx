@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { NavBar } from "@/components/layout/NavBar";
 import { getSiteConfig } from "@/lib/content/site";
+import { ensureContentIntegrity } from "@/lib/content/validate";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,7 +25,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const site = await getSiteConfig();
+  const [site] = await Promise.all([getSiteConfig(), ensureContentIntegrity()]);
   return (
     <html lang="vi" className="h-full antialiased">
       <body className="flex min-h-full flex-col">

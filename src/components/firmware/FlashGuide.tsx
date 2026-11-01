@@ -12,7 +12,7 @@ export function FlashGuide({ afterFlash, projectHref }: { afterFlash?: string[];
     <div className="space-y-8">
       <div>
         <h2 className="title-1 text-label">Hướng dẫn sử dụng</h2>
-        <p className="mt-1.5 text-label-2">Ba bước để nạp firmware, không cần cài phần mềm hay driver đặc biệt với hầu hết bo mạch hiện đại.</p>
+        <p className="mt-1.5 text-label-2">Ba bước để nạp firmware, không cần cài phần mềm hay driver đặc biệt với hầu hết board hiện đại. Sau khi nạp, mở Serial Monitor để lấy mã ghép nối Matter.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -31,16 +31,17 @@ export function FlashGuide({ afterFlash, projectHref }: { afterFlash?: string[];
           </span>
           <h3 className="mt-4 text-[1.05rem] font-semibold text-label">2. Chọn firmware</h3>
           <p className="mt-1.5 text-[0.95rem] leading-relaxed text-label-2">
-            Chọn bản firmware của dự án. Khi kết nối, trang sẽ đọc loại chip (ESP32, C3, C6, S3…) và tự chọn bản dựng phù hợp. Nếu không tương thích bạn sẽ được báo ngay.
+            Chọn bản firmware của dự án. Khi kết nối, trang đọc loại chip (ESP32, C3, C6, S3…), dung lượng flash và tự chọn bản dựng phù hợp. Không tương thích thì báo ngay, chưa ghi gì vào board.
           </p>
         </Card>
         <Card padding="md" className="animate-rise [animation-delay:160ms]">
           <span className="flex size-10 items-center justify-center rounded-[12px] bg-lavender-soft text-lavender">
             <IconLock size={22} />
           </span>
-          <h3 className="mt-4 text-[1.05rem] font-semibold text-label">3. Flash</h3>
+          <h3 className="mt-4 text-[1.05rem] font-semibold text-label">3. Kết nối rồi nạp</h3>
           <p className="mt-1.5 text-[0.95rem] leading-relaxed text-label-2">
-            Nhấn <strong className="font-semibold text-label">Kết nối &amp; Flash</strong>, chọn cổng trong hộp thoại và chờ. Firmware được mã hoá theo phiên, giải mã trong bộ nhớ và ghi thẳng vào chip kèm kiểm tra MD5.
+            Nhấn <strong className="font-semibold text-label">Kết nối thiết bị</strong>, chọn cổng trong hộp thoại; khi chip hiện <em>Tương thích</em>, chọn chế độ Cập nhật hoặc Cài mới rồi nhấn{" "}
+            <strong className="font-semibold text-label">Nạp firmware</strong>. Firmware được mã hoá theo phiên, giải mã trong bộ nhớ và ghi thẳng vào chip kèm kiểm tra MD5.
           </p>
         </Card>
       </div>
@@ -91,12 +92,12 @@ export function FlashGuide({ afterFlash, projectHref }: { afterFlash?: string[];
             <li className="flex gap-3">
               <IconWarning size={18} className="mt-1 shrink-0 text-warning" />
               <span>
-                <strong className="font-semibold text-label">Lỗi giữa chừng hoặc MD5 không khớp:</strong> mở Tuỳ chọn nâng cao, giảm baud xuống 230400 và bật “Xoá toàn bộ flash”.
+                <strong className="font-semibold text-label">Lỗi giữa chừng hoặc MD5 không khớp:</strong> mở Tuỳ chọn nâng cao, giảm baud xuống 230400 và chọn chế độ “Cài mới (xoá toàn bộ)”.
               </span>
             </li>
           </ul>
           <p className="mt-5 text-[0.95rem]">
-            <Link href="/guides/khac-phuc-loi-flash" className="font-semibold text-tint underline-offset-4 hover:underline">
+            <Link href="/huong-dan/khac-phuc-loi-flash" className="font-semibold text-tint underline-offset-4 hover:underline">
               Xem hướng dẫn khắc phục đầy đủ →
             </Link>
           </p>
@@ -128,11 +129,16 @@ export function FlashGuide({ afterFlash, projectHref }: { afterFlash?: string[];
       <Card padding="lg" tint="graphite">
         <h3 className="title-2 text-label">Firmware được bảo vệ như thế nào?</h3>
         <ul className="mt-3 space-y-2 text-[0.95rem] leading-relaxed text-label-2">
-          <li>• Không có đường dẫn tải về: file nằm ngoài thư mục công khai và chỉ được phát qua phiên có chữ ký, hết hạn sau vài phút.</li>
+          <li>• Không có đường dẫn tải về: file nằm ngoài thư mục công khai và chỉ được phát qua phiên có chữ ký, hết hạn sau 10 phút; mỗi phần chỉ phát một lần cho mỗi phiên.</li>
           <li>• Mỗi phiên dùng khoá AES‑256‑GCM riêng; dữ liệu được giải mã trong bộ nhớ trình duyệt ngay trước khi ghi và xoá sau khi xong.</li>
-          <li>• Máy chủ chỉ phát bản dựng khớp với chip đã nhận diện và từ chối mọi truy cập trực tiếp từ thanh địa chỉ hay trang khác.</li>
+          <li>• Máy chủ chỉ phát bản dựng khớp với chip mà trình nạp báo về và từ chối mọi truy cập trực tiếp từ thanh địa chỉ hay trang khác.</li>
           <li>• Giới hạn trung thực: trình duyệt phải nhận dữ liệu để nạp nên không thể bảo vệ tuyệt đối. Với dự án cần bảo mật cao, hãy bật Flash Encryption và Secure Boot trên chip.</li>
         </ul>
+        <p className="mt-3 text-[0.95rem]">
+          <Link href="/bao-ve-firmware" className="font-semibold text-tint underline-offset-4 hover:underline">
+            Đọc đầy đủ: ngăn được gì, không ngăn được gì →
+          </Link>
+        </p>
       </Card>
     </div>
   );

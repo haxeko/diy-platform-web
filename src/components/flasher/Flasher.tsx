@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { FirmwarePublic } from "@/lib/flash/shared";
 import { useFlasher } from "@/lib/flash/client/useFlasher";
@@ -9,7 +9,10 @@ import { formatBytes } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Callout } from "@/components/ui/Callout";
+import { ClientQr } from "@/components/ui/ClientQr";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { StepList } from "@/components/ui/StepList";
 import {
   IconBolt,
@@ -18,15 +21,19 @@ import {
   IconLock,
   IconRefresh,
   IconSpinner,
+  IconTerminal,
   IconUsb,
   IconX,
 } from "@/components/ui/Icons";
 import { ChipCard } from "./ChipCard";
 import { FirmwarePicker, type ProjectRef } from "./FirmwarePicker";
 import { LogConsole } from "./LogConsole";
+import { MatterPairingCard } from "./MatterPairingCard";
+import { SerialMonitor } from "./SerialMonitor";
 import { PHASE_HINT, PHASE_LABEL, STRINGS } from "./strings";
 
 const BAUD_OPTIONS = [921600, 460800, 230400, 115200] as const;
+type EraseMode = "update" | "fresh";
 
 export interface FlasherProps {
   firmwares: FirmwarePublic[];
@@ -41,12 +48,19 @@ export interface FlasherProps {
 export function Flasher({ firmwares, initialId, showPicker, projects, className }: FlasherProps) {
   const [selectedId, setSelectedId] = useState(initialId ?? firmwares[0]?.id ?? "");
   const [baudrate, setBaudrate] = useState<number>(460800);
-  const [eraseAll, setEraseAll] = useState(false);
+  const [eraseMode, setEraseMode] = useState<EraseMode>("update");
+  const [eraseConfirmed, setEraseConfirmed] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const advancedId = useId();
+  const regionRef = useRef<HTMLDivElement>(null);
 
   const firmware = useMemo(() => firmwares.find((f) => f.id === selectedId) ?? firmwares[0], [firmwares, selectedId]);
-  const { state, start, abort, reset, busy } = useFlasher(firmware, { baudrate, eraseAll });
+  const { state, connect, flash, disconnect, abort, reset, startMonitor, stopMonitor, busy } = useFlasher(firmware, { baudrate });
+  const { phase } = state;
+
+  useEffect(() => {
+    if (phase === "detected" || phase === "done" || phase === "error" || phase === "incompatible") regionRef.current?.focus();
+  }, [phase]);
 
   if (!firmware) {
     return (
@@ -57,9 +71,66 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
   }
 
   const picker = showPicker ?? firmwares.length > 1;
-  const compatible = state.chip ? (state.incompatible ? false : true) : null;
+  const pickerLocked = phase !== "idle" && phase !== "error";
+  const forcedErase = firmware.forceErase;
+  const effectiveErase = forcedErase || eraseMode === "fresh";
+  const canFlash = phase === "detected" && (!effectiveErase || forcedErase || eraseConfirmed);
   const overall = state.progress?.overall ?? 0;
   const prepareFrac = state.prepare && state.prepare.total > 0 ? state.prepare.received / state.prepare.total : 0;
+  const pairing = state.monitor.pairing ?? (firmware.pairing && (firmware.pairing.qr || firmware.pairing.manualCode) ? firmware.pairing : null);
+  const pairingSource: "device" | "manifest" = state.monitor.pairing ? "device" : "manifest";
+
+  const onSelect = (id: string) => {
+    if (pickerLocked) return;
+    setSelectedId(id);
+    setEraseConfirmed(false);
+    reset();
+  };
+
+  const statusRow = (
+    <div className="rounded-[16px] bg-surface-2 p-4">
+      <div className="flex items-center gap-3">
+        <IconSpinner size={22} className="shrink-0 text-tint" />
+        <div className="min-w-0 flex-1" role="status" aria-live="polite">
+          <p className="font-semibold text-label">{PHASE_LABEL[phase]}</p>
+          {PHASE_HINT[phase] && <p className="mt-0.5 text-[0.9rem] text-label-2">{PHASE_HINT[phase]}</p>}
+        </div>
+        {phase === "flashing" && state.progress && (
+          <span className="shrink-0 text-[1.35rem] font-bold tabular text-label" aria-hidden="true">
+            {Math.round(overall * 100)}%
+          </span>
+        )}
+      </div>
+      {phase === "preparing" && (
+        <div className="mt-3">
+          <ProgressBar value={prepareFrac} indeterminate={!state.prepare} label="Tiến độ nhận firmware" size="sm" />
+          {state.prepare && (
+            <p className="mt-1.5 text-[0.8rem] text-label-3 tabular">
+              {formatBytes(state.prepare.received)} / {formatBytes(state.prepare.total)}
+            </p>
+          )}
+        </div>
+      )}
+      {(phase === "flashing" || phase === "erasing") && (
+        <div className="mt-3">
+          <ProgressBar value={overall} indeterminate={phase === "erasing" || !state.progress} label="Tiến độ ghi firmware" />
+          {state.progress && phase === "flashing" && (
+            <p className="mt-1.5 flex justify-between text-[0.8rem] text-label-3 tabular">
+              <span>{STRINGS.partOf(state.progress.partIndex + 1, state.progress.partCount)}</span>
+              <span>
+                {formatBytes(state.progress.bytesWritten)} / {formatBytes(state.progress.bytesTotal)}
+              </span>
+            </p>
+          )}
+        </div>
+      )}
+      {(phase === "requesting-port" || phase === "connecting" || phase === "detecting" || phase === "finishing") && (
+        <div className="mt-3">
+          <ProgressBar indeterminate label="Đang kết nối" size="sm" />
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <section
@@ -68,11 +139,11 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
     >
       {picker && (
         <div className="min-w-0">
-          <FirmwarePicker firmwares={firmwares} selectedId={firmware.id} onSelect={setSelectedId} disabled={busy} projects={projects} />
+          <FirmwarePicker firmwares={firmwares} selectedId={firmware.id} onSelect={onSelect} disabled={pickerLocked} projects={projects} />
         </div>
       )}
 
-      <div className="min-w-0 rounded-card border border-separator bg-surface p-5 shadow-card sm:p-6">
+      <div className="min-w-0 rounded-card-lg border border-separator bg-surface p-5 shadow-card sm:p-6">
         {/* header */}
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -87,6 +158,7 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
                 </Badge>
               ))}
               {firmware.demo && <Badge tone="warning" size="sm">{STRINGS.demoBadge}</Badge>}
+              {firmware.minFlashMB && <Badge tone="neutral" size="sm">Flash ≥ {firmware.minFlashMB} MB</Badge>}
             </div>
           </div>
           <span className="flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-tint-soft text-tint-strong">
@@ -94,97 +166,108 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
           </span>
         </div>
 
-        {/* body by phase */}
-        <div className="mt-5 space-y-4">
+        <div ref={regionRef} tabIndex={-1} className="mt-5 space-y-4 outline-none">
+          {/* browser gate */}
+          {/* `supported` is only ever false after mount, so this branch never renders on the server. */}
           {state.supported === false && (
-            <Callout tone="warning" title={STRINGS.unsupportedTitle}>
-              {STRINGS.unsupportedBody}
+            <Callout tone="warning" title={STRINGS.gateTitle}>
+              <p>{STRINGS.gateBody}</p>
+              {!window.isSecureContext && <p className="mt-1">{STRINGS.gateHttps}</p>}
+              <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                <ClientQr value={window.location.href} size={112} label={STRINGS.gateQr} className="p-2" />
+                <div className="space-y-2">
+                  <p className="text-[0.85rem]">{STRINGS.gateQr}</p>
+                  <CopyButton value={window.location.href} label={STRINGS.gateCopyLink} size="sm" />
+                </div>
+              </div>
             </Callout>
           )}
 
-          {state.phase === "idle" && (
+          {phase === "idle" && (
             <>
               <StepList steps={STRINGS.steps} />
               {firmware.demo && (
                 <Callout tone="warning" title="Đây là firmware giữ chỗ (demo)">
-                  File demo chỉ dùng để kiểm thử giao diện và luồng nạp, thiết bị sẽ không chạy được sau khi flash. Thay bằng firmware thật trước khi phát hành.
+                  File demo chỉ dùng để kiểm thử giao diện và luồng nạp, thiết bị sẽ không chạy được sau khi nạp. Thay bằng firmware thật trước khi phát hành.
                 </Callout>
               )}
             </>
           )}
 
-          {busy && (
-            <div className="rounded-[16px] bg-surface-2 p-4" aria-live="polite">
-              <div className="flex items-center gap-3">
-                <IconSpinner size={22} className="shrink-0 text-tint" />
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-label">{PHASE_LABEL[state.phase]}</p>
-                  {PHASE_HINT[state.phase] && <p className="mt-0.5 text-[0.9rem] text-label-2">{PHASE_HINT[state.phase]}</p>}
-                </div>
-                {state.phase === "flashing" && state.progress && (
-                  <span className="shrink-0 text-[1.35rem] font-bold tabular text-label">{Math.round(overall * 100)}%</span>
-                )}
-              </div>
+          {busy && statusRow}
 
-              {state.phase === "preparing" && (
-                <div className="mt-3">
-                  <ProgressBar value={prepareFrac} indeterminate={!state.prepare} label="Tiến độ nhận firmware" size="sm" />
-                  {state.prepare && (
-                    <p className="mt-1.5 text-[0.8rem] text-label-3 tabular">
-                      {formatBytes(state.prepare.received)} / {formatBytes(state.prepare.total)}
-                    </p>
-                  )}
-                </div>
+          {state.chip && phase !== "idle" && <ChipCard info={state.chip} compatible={phase === "incompatible" ? false : true} />}
+
+          {phase === "detected" && (
+            <div className="space-y-3 rounded-[16px] border border-separator p-4">
+              <p className="text-[0.9rem] font-semibold text-label">{STRINGS.eraseMode}</p>
+              {forcedErase ? (
+                <Callout tone="warning" role="note">
+                  {STRINGS.eraseForced}
+                </Callout>
+              ) : (
+                <SegmentedControl<EraseMode>
+                  ariaLabel={STRINGS.eraseMode}
+                  value={eraseMode}
+                  onChange={(v) => {
+                    setEraseMode(v);
+                    setEraseConfirmed(false);
+                  }}
+                  options={[
+                    { value: "update", label: `${STRINGS.eraseUpdate} · ${STRINGS.eraseUpdateHint}` },
+                    { value: "fresh", label: `${STRINGS.eraseFresh} · ${STRINGS.eraseFreshHint}` },
+                  ]}
+                />
               )}
-
-              {state.phase === "flashing" && (
-                <div className="mt-3">
-                  <ProgressBar value={overall} indeterminate={!state.progress} label="Tiến độ ghi firmware" />
-                  {state.progress && (
-                    <p className="mt-1.5 flex justify-between text-[0.8rem] text-label-3 tabular">
-                      <span>{STRINGS.partOf(state.progress.partIndex + 1, state.progress.partCount)}</span>
-                      <span>
-                        {formatBytes(state.progress.bytesWritten)} / {formatBytes(state.progress.bytesTotal)}
-                      </span>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {(state.phase === "requesting-port" || state.phase === "connecting" || state.phase === "detecting") && (
-                <div className="mt-3">
-                  <ProgressBar indeterminate label="Đang kết nối" size="sm" />
-                </div>
+              {effectiveErase && !forcedErase && (
+                <Callout tone="warning" role="note">
+                  <p>{STRINGS.eraseConfirm}</p>
+                  <label className="mt-2 flex items-center gap-2 text-[0.9rem] text-label">
+                    <input type="checkbox" checked={eraseConfirmed} onChange={(e) => setEraseConfirmed(e.target.checked)} className="size-4 accent-[var(--color-tint)]" />
+                    {STRINGS.eraseConfirmCheck}
+                  </label>
+                </Callout>
               )}
             </div>
           )}
 
-          {state.chip && <ChipCard info={state.chip} compatible={compatible} />}
-
-          {state.phase === "incompatible" && state.incompatible && (
-            <Callout tone="danger" title={`Firmware này không có bản dựng cho ${state.incompatible.detected}`}>
-              {STRINGS.supported}: {state.incompatible.supported.join(", ")}. Hãy chọn firmware khác hoặc xem{" "}
-              <Link href={`/firmware?chip=${encodeURIComponent(state.incompatible.detected)}`} className="font-semibold text-tint underline-offset-4 hover:underline">
-                firmware cho {state.incompatible.detected}
-              </Link>
-              .
+          {phase === "incompatible" && state.incompatible && (
+            <Callout
+              tone="danger"
+              title={
+                state.incompatible.reason === "flash-too-small"
+                  ? `Flash của ${state.incompatible.detected} nhỏ hơn mức firmware cần (≥ ${firmware.minFlashMB ?? "?"} MB)`
+                  : `Firmware này không có bản dựng cho ${state.incompatible.detected}`
+              }
+            >
+              {state.incompatible.reason === "chip" ? (
+                <>
+                  {STRINGS.supported}: {state.incompatible.supported.join(", ")}. Hãy chọn firmware khác hoặc xem{" "}
+                  <Link href={`/firmware?chip=${encodeURIComponent(state.incompatible.detected)}`} className="font-semibold text-tint underline-offset-4 hover:underline">
+                    firmware cho {state.incompatible.detected}
+                  </Link>
+                  .
+                </>
+              ) : (
+                <>Dùng board có flash lớn hơn hoặc chọn firmware khác.</>
+              )}
             </Callout>
           )}
 
-          {state.phase === "error" && state.error && (
+          {phase === "error" && state.error && (
             <Callout tone={state.error.code === "aborted" ? "warning" : "danger"} title={state.error.message}>
               {state.error.hint}
             </Callout>
           )}
 
-          {state.phase === "done" && state.done && (
+          {phase === "done" && state.done && (
             <div className="rounded-[16px] border border-[#bfe9cc] bg-success-soft p-4 animate-rise" role="status">
               <div className="flex items-start gap-3">
                 <IconCheckCircle size={26} className="shrink-0 text-success" />
                 <div className="min-w-0">
-                  <p className="text-[1.05rem] font-semibold text-label">{STRINGS.doneTitle}</p>
+                  <p className="text-[1.05rem] font-semibold text-label">{STRINGS.doneTitle(state.chip?.chip ?? "")}</p>
                   <p className="mt-0.5 text-[0.95rem] text-label-2">
-                    {STRINGS.doneBody(state.done.firmware.name, state.done.firmware.version, state.done.seconds)}
+                    {STRINGS.doneBody(state.done.firmware.name, state.done.firmware.version, formatBytes(state.done.bytes), state.done.seconds)}
                   </p>
                 </div>
               </div>
@@ -197,22 +280,47 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
             </div>
           )}
 
+          {phase === "done" && pairing && <MatterPairingCard pairing={pairing} source={pairingSource} />}
+
+          {phase === "done" && state.monitor.open && <SerialMonitor lines={state.monitor.lines} open={state.monitor.open} onClose={() => void stopMonitor()} />}
+
           {/* actions */}
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            {!busy && state.phase !== "done" && (
-              <Button size="lg" icon={<IconBolt size={20} />} onClick={() => void start()} disabled={state.supported === false || state.supported === null}>
-                {state.phase === "error" || state.phase === "incompatible" ? STRINGS.retry : STRINGS.connectAndFlash}
+            {(phase === "idle" || phase === "error" || phase === "incompatible") && (
+              <Button size="lg" icon={<IconBolt size={20} />} onClick={() => void connect()} disabled={state.supported !== true}>
+                {phase === "idle" ? STRINGS.connect : STRINGS.retry}
               </Button>
             )}
-            {state.phase === "done" && (
-              <Button size="lg" variant="tinted" icon={<IconRefresh size={20} />} onClick={reset}>
-                {STRINGS.flashAnother}
-              </Button>
+            {phase === "detected" && (
+              <>
+                <Button size="lg" icon={<IconBolt size={20} />} onClick={() => void flash(effectiveErase)} disabled={!canFlash}>
+                  {STRINGS.flash(state.chip?.chip ?? "")}
+                </Button>
+                <Button size="lg" variant="secondary" onClick={() => void disconnect()}>
+                  {STRINGS.disconnect}
+                </Button>
+              </>
             )}
             {busy && (
-              <Button size="lg" variant="danger" icon={<IconX size={20} />} onClick={() => void abort()} disabled={state.phase === "finishing"}>
+              <Button size="lg" variant="danger" icon={<IconX size={20} />} onClick={() => void abort()} disabled={phase === "finishing"}>
                 {STRINGS.cancel}
               </Button>
+            )}
+            {phase === "done" && (
+              <>
+                {state.monitor.open ? (
+                  <Button size="lg" variant="secondary" icon={<IconTerminal size={20} />} onClick={() => void stopMonitor()}>
+                    {STRINGS.closeSerial}
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="tinted" icon={<IconTerminal size={20} />} onClick={() => void startMonitor()}>
+                    {STRINGS.openSerial}
+                  </Button>
+                )}
+                <Button size="lg" variant="secondary" icon={<IconRefresh size={20} />} onClick={reset}>
+                  {STRINGS.flashAnother}
+                </Button>
+              </>
             )}
             <span className="ml-auto inline-flex items-center gap-1.5 text-[0.8rem] text-label-3">
               <IconLock size={14} />
@@ -221,7 +329,7 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
           </div>
 
           {/* advanced */}
-          {!busy && state.phase !== "done" && (
+          {(phase === "idle" || phase === "error") && (
             <div className="rounded-[16px] border border-separator">
               <button
                 type="button"
@@ -236,7 +344,10 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
               {advancedOpen && (
                 <div id={advancedId} className="space-y-4 border-t border-separator px-4 py-4">
                   <label className="flex items-center justify-between gap-4 text-[0.95rem]">
-                    <span className="font-medium text-label">{STRINGS.baud}</span>
+                    <span>
+                      <span className="font-medium text-label">{STRINGS.baud}</span>
+                      <span className="mt-0.5 block text-[0.85rem] text-label-3">Tự hạ xuống 115200 nếu không kết nối được.</span>
+                    </span>
                     <select
                       value={baudrate}
                       onChange={(e) => setBaudrate(Number(e.target.value))}
@@ -250,24 +361,12 @@ export function Flasher({ firmwares, initialId, showPicker, projects, className 
                       ))}
                     </select>
                   </label>
-                  <label className="flex items-start gap-3 text-[0.95rem]">
-                    <input
-                      type="checkbox"
-                      checked={eraseAll}
-                      onChange={(e) => setEraseAll(e.target.checked)}
-                      className="mt-1 size-5 shrink-0 accent-[var(--color-tint)]"
-                    />
-                    <span>
-                      <span className="font-medium text-label">{STRINGS.eraseAll}</span>
-                      <span className="mt-0.5 block text-[0.875rem] text-label-3">{STRINGS.eraseAllHint}</span>
-                    </span>
-                  </label>
                 </div>
               )}
             </div>
           )}
 
-          <LogConsole lines={state.log} defaultOpen={state.phase === "error"} />
+          <LogConsole lines={state.log} forceOpen={phase === "error"} />
 
           <p className="flex items-start gap-2 text-[0.8rem] leading-relaxed text-label-3">
             <IconLock size={14} className="mt-0.5 shrink-0" />
