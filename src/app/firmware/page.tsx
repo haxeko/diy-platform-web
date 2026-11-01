@@ -34,8 +34,8 @@ export default async function FirmwarePage({ searchParams }: { searchParams: Pro
     <Container className="pb-16">
       <PageHeader
         eyebrow="Firmware"
-        title="Cắm vào, chọn firmware, nhấn Flash."
-        description="Chip được nhận diện tự động và nạp ngay trên trình duyệt. Không cần cài phần mềm, không có file tải về."
+        title="Cắm board. Chọn firmware. Nạp."
+        description="Kết nối thiết bị, chip được nhận diện tự động, kiểm tra tương thích rồi nạp ngay trên trình duyệt. Không cần cài phần mềm, không có file tải về."
       />
 
       {chipFilter && (
