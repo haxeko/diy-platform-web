@@ -12,7 +12,7 @@ Pi 3 có 1 GB RAM và thẻ SD chậm nên **không build trên Pi**. Quy trình
 ```bash
 git clone <repo> && cd diy-platform-web
 npm run package:pi
-# → dist/machnha-pi-<version>-<ngày>.tar.gz (khoảng 15–25 MB)
+# → dist/machnha-pi-<version>-<ngày>.tar.gz (khoảng 5–6 MB, giải nén ~35 MB)
 ```
 
 Trước khi đóng gói, hãy điền `content/site.json` (MoMo, ví, Buy Me a Coffee), thêm firmware thật (`npm run firmware:add …`, đặt `"demo": false`) nếu đã có. Gói mặc định chứa firmware **demo** (không boot được) để chạy thử giao diện.
